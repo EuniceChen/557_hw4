@@ -2,35 +2,112 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>D3 Test</title>
+        <title>Election Results</title>
         <script src="https://d3js.org/d3.v4.js"></script>
     </head>
     <style type="text/css">
-        table {
+        h2{
+            font-family: Impact, Charcoal, sans-serif;
+            margin-left: auto;
+            margin-right: auto;
             text-align: center;
         }
+
+        table {
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #legend {
+            margin-top: 8vh; 
+            margin-bottom: 5vh;
+        }
+
+        #legendText {
+            font-size: 10px;
+        }
+
+        div.tooltip {   
+            position: absolute;         
+            text-align: left;         
+            width: 20vw;                    
+            height: 18vh;                   
+            padding-left: 1vw;       
+            background: white;    
+            border: 1px;       
+            border-color: black; 
+            border-radius: 3px;         
+            pointer-events: none;           
+        }
+        p.state {
+            font-size: 1.3vw;
+            font-family: Trebuchet MS;
+            margin-bottom: 0px;
+
+        }
+
+        p.votes {
+            font-size: 0.8vw;
+            font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+            color: black;
+            margin-bottom: 0px;
+        }
+
+        li.clinton {
+            font-size: 0.8vw;
+            color: #08519c;
+            font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+        }
+
+        li.trump {
+            font-size: 0.8vw;
+            color: #a50f15;
+            font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+        }
+
     </style>
     <body>
+        <h2>Election Results</h2>
         <script type="text/javascript">
             //d3 code here!
-            //
             var w = window.innerWidth * 0.7;
-            var h = w * 0.65;
+            var h = w * 0.5;
             console.log(h , w);
             var xScale = d3.scaleLinear().range([0, w]).domain([0, 12]);
             var yScale = d3.scaleLinear().range([0, h]).domain([0, 7]);
-            
+
+            var varColor = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#eff3ff", 
+                            "#fee5d9", "#fcae91", "#fb6a4a", "#de2d26", "#a50f15"];
+            var varText = ["-90.0 to -80.0", "-40.0 to -30.0", "-30.0 to -20.0", "-20.0 to -10.0", "-10.0 to -0.0", 
+                            "0.0 to 10.0"  , "10.0 to 20.0"  , "20.0 to 30.0"  , "30.0 to 40.0"  , "40.0 to 50.0"];
+
+            var legend = d3.select('body').append('table').attr("id", "legend").attr("width", xScale(11)).attr("height", 10);  
+            legend.append("tr").attr("id", "legendColor");
+            var legendGrid = d3.select("#legendColor").selectAll("td").data(varColor).enter()
+                                .append("td")
+                                .attr("height", 5)
+                                .style("background", function(v) {
+                                    return v;
+                                });
+
+            legend.append("tr").attr("id", "legendText");
+            var legendGrid = d3.select("#legendText").selectAll("td").data(varText).enter()
+                                .append("td")
+                                .attr("height", 5)
+                                .html(function(v) {
+                                    return v;
+                                });
 
             var pos = [["AK", ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , "ME"],
                         [""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , "VT", "NH"],
                         [""  , "WA", "ID", "MT", "ND", "MN", "IL", "WI", "MI", "NY", "RI", "MA"],
                         [""  , "OR", "NV", "WY", "SD", "IA", "IN", "OH", "PA", "NJ", "CT", ""  ],
                         [""  , "CA", "UT", "CO", "NE", "MO", "KY", "WV", "VA", "MD", "DC", ""  ],
-                        [""  , ""  , "AZ", "MN", "KS", "AR", "TN", "NC", "SC", "DE", ""  , ""  ],
+                        [""  , ""  , "AZ", "NM", "KS", "AR", "TN", "NC", "SC", "DE", ""  , ""  ],
                         [""  , ""  , ""  , ""  , "OK", "LA", "MS", "AL", "GA", ""  , ""  , ""  ],
-                        ["HI", ""  , ""  , ""  , "TX", ""  , ""  , ""  , ""  , "FL", ""  , ""  ]];
-            var table = d3.select('body').append('table').attr("width", w).attr("height", h);   
-            var tr = table.selectAll("tr").enter().data(pos).enter().append("tr");
+                        [""  , "HI"  , ""  , ""  , "TX", ""  , ""  , ""  , ""  , "FL", ""  , ""  ]];
+            var table = d3.select('body').append('table').attr("id", "map").attr("width", w).attr("height", h);   
+            var tr = d3.select("#map").selectAll("tr").enter().data(pos).enter().append("tr");
             for(i = 0; i < 12; i++) { 
                 tr.append('td')
                     .attr('id', function(l) { if(l[i] != "")return l[i]})
@@ -40,14 +117,76 @@
                     .attr("height", function() {
                         yScale(1);
                     })
-                    .style("background", "lightblue")
                     .append("div")
                     .html(function(l) { return l[i] });
             }
-            
-            console.log(pos);
-            d3.csv("election-results.csv", function(data) {                
-                console.log(data);
+
+            var tooltip = d3.select("body").append("div")   
+                .attr("class", "tooltip")               
+                .style("opacity", 0);
+         //.style("visibility", "hidden");
+            d3.csv("election-results.csv", function(data) {          
+                data.forEach(function(d) {
+                     table.select("#" + d[""]).style("background", function() {
+                        var ratio = (parseFloat(parseInt(d["% Trump"]) - parseFloat(d["% Clinton"])));
+                        console.log(d[""], ratio);
+                        if(ratio < 0) {
+                            var index = parseInt(ratio / 10);
+                            if(index < -4) index = -4;
+                            return varColor[4 + index];
+                        }
+                        else {
+                            var index = parseInt(ratio / 10);
+                            if(index > 4) index = 4;
+                            return varColor[5 + index];
+                        }
+                     });
+
+                     table.select("#" + d[""])
+                     .append("div")
+                     .html((parseInt(d["Electoral Votes Clinton"]) + parseInt(d["Electoral Votes Trump"])).toString())
+                     .on("mouseover", function() {           
+                        tooltip 
+                        .style("left", (d3.event.pageX) + "px")     
+                        .style("top", (d3.event.pageY - 100) + "px")
+                        .style("opacity", .9);
+
+                        //State or District
+                        tooltip.append("p").html(d["State or district"])
+                        .attr("class", "state")
+                        .style("color", function(){
+                            return d["% Trump"] > d["% Clinton"] ? "#a50f15" : "#08519c"
+                        });
+
+                        tooltip.append("p")
+                        .html("Electoral Votes: " + (parseInt(d["Electoral Votes Clinton"]) + parseInt(d["Electoral Votes Trump"])).toString())
+                        .attr("class", "votes");
+
+                        var ul = tooltip.append("ul").style("margin-top", "1vh").style("padding-left-left", ".2vw");
+
+                        ul.append("li")
+                        .attr("class", "clinton")
+                        .html("Hillary Clinton: " 
+                            + (parseInt(d["# Clinton"])).toString() 
+                            + " (" 
+                            + (parseInt(d["% Clinton"])).toString() 
+                            + "%)");
+
+                        ul.append("li")
+                        .attr("class", "trump")
+                        .html("Donald Trump: " 
+                            + (parseFloat(d["# Trump"])).toString() 
+                            + " (" 
+                            + (parseFloat(d["% Trump"])).toString() 
+                            + "%)");
+
+                    })                  
+                    .on("mouseout", function(d) {        
+                        tooltip.style("opacity", 0);  
+                        tooltip.selectAll("*").remove();   
+                    });
+
+                 });
             });
             table.append('tr').enter();
         </script>
