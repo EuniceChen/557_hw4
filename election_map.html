@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3 Test</title>
+        <script src="https://d3js.org/d3.v4.js"></script>
+    </head>
+    <style type="text/css">
+        table {
+            text-align: center;
+        }
+    </style>
+    <body>
+        <script type="text/javascript">
+            //d3 code here!
+            //
+            var w = window.innerWidth * 0.7;
+            var h = w * 0.65;
+            console.log(h , w);
+            var xScale = d3.scaleLinear().range([0, w]).domain([0, 12]);
+            var yScale = d3.scaleLinear().range([0, h]).domain([0, 7]);
+            
+
+            var pos = [["AK", ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , "ME"],
+                        [""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , "VT", "NH"],
+                        [""  , "WA", "ID", "MT", "ND", "MN", "IL", "WI", "MI", "NY", "RI", "MA"],
+                        [""  , "OR", "NV", "WY", "SD", "IA", "IN", "OH", "PA", "NJ", "CT", ""  ],
+                        [""  , "CA", "UT", "CO", "NE", "MO", "KY", "WV", "VA", "MD", "DC", ""  ],
+                        [""  , ""  , "AZ", "MN", "KS", "AR", "TN", "NC", "SC", "DE", ""  , ""  ],
+                        [""  , ""  , ""  , ""  , "OK", "LA", "MS", "AL", "GA", ""  , ""  , ""  ],
+                        ["HI", ""  , ""  , ""  , "TX", ""  , ""  , ""  , ""  , "FL", ""  , ""  ]];
+            var table = d3.select('body').append('table').attr("width", w).attr("height", h);   
+            var tr = table.selectAll("tr").enter().data(pos).enter().append("tr");
+            for(i = 0; i < 12; i++) { 
+                tr.append('td')
+                    .attr('id', function(l) { if(l[i] != "")return l[i]})
+                    .attr("width", function() {
+                        xScale(1);
+                    })
+                    .attr("height", function() {
+                        yScale(1);
+                    })
+                    .style("background", "lightblue")
+                    .append("div")
+                    .html(function(l) { return l[i] });
+            }
+            
+            console.log(pos);
+            d3.csv("election-results.csv", function(data) {                
+                console.log(data);
+            });
+            table.append('tr').enter();
+        </script>
+    </body>
+</html>
