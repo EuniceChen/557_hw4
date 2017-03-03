@@ -13,13 +13,84 @@
             text-align: center;
         }
 
+        .container {
+            padding: 0;
+            height: 11vh;
+            width: 100vw;
+        }
+
+        .timeline {
+            position: absolute;
+            margin: auto;
+        }
+        .timelineButton {
+            padding: 0;
+        }
+
+        .timelineButton li{
+            list-style-type:  none;
+            float: left;
+            width: 5%;
+            position: relative;
+            text-align: center;
+        }
+
+        .active {
+            border-color: black  !important;
+            height: 3.2vh !important;
+            width:  3.2vh !important;
+            margin-top: 0.5vh !important;
+        }
+
+        .timelineButton div{
+            content: ' ';
+            height: 2.2vh;
+            width:  2.2vh;
+            border: 1px solid #ddd;
+            display: block;
+            margin: 1vh auto 1.5vh auto;
+            border-radius: 50%;
+        }
+
+        .timelineButton li:before {
+            background-color: white;
+        }
+        .timelineButton li:after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background-color: #ddd;
+            top: 2.2vh;
+            left: -50%;
+            z-index: -1;
+        }
+        .timelineButton li:first-child:after {
+            content: none;
+        }
+
+        .timelineYear {
+            padding-left: 0;
+            padding-right: 0;
+            margin-top: 4vh;
+        }
+        .timelineYear li{
+            list-style-type:  none;
+            float: left;
+            width: 5%;
+            position: relative;
+            text-align: center;
+        }
+
         table {
             text-align: center;
             margin-left: auto;
             margin-right: auto;
+            font-size: 2vh;
         }
+
         #legend {
-            margin-top: 8vh; 
+            margin-top: 5vh; 
             margin-bottom: 5vh;
         }
 
@@ -65,39 +136,42 @@
             font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
         }
 
+        .image {
+            height: 10vw;
+            width: 10vw;
+            float: left;
+            margin: 5vw;
+        }
+
+        .image img {
+            border-radius: 50%;
+            height: 10vw;
+            width: 10vw;
+        }
     </style>
     <body>
-        <h2>Election Results</h2>
+        <h2>US Election Results 1940-2016</h2>
         <script type="text/javascript">
             //d3 code here!
-            var w = window.innerWidth * 0.7;
+            
+            // size of the map table
+            var w = window.innerWidth * 0.55;
             var h = w * 0.5;
-            console.log(h , w);
+
+            // scale
             var xScale = d3.scaleLinear().range([0, w]).domain([0, 12]);
             var yScale = d3.scaleLinear().range([0, h]).domain([0, 7]);
 
-            var varColor = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#eff3ff", 
+            // colors on map and legend text
+            var varColor = ["#08306b", "#3182bd", "#6baed6", "#bdd7e7", "#eff3ff", 
                             "#fee5d9", "#fcae91", "#fb6a4a", "#de2d26", "#a50f15"];
-            var varText = ["-90.0 to -80.0", "-40.0 to -30.0", "-30.0 to -20.0", "-20.0 to -10.0", "-10.0 to -0.0", 
-                            "0.0 to 10.0"  , "10.0 to 20.0"  , "20.0 to 30.0"  , "30.0 to 40.0"  , "40.0 to 50.0"];
+            var varText = ["-40.0 and less", "-40.0 to -30.0", "-30.0 to -20.0", "-20.0 to -10.0", "-10.0 to -0.0", 
+                            "0.0 to 10.0"  , "10.0 to 20.0"  , "20.0 to 30.0"  , "30.0 to 40.0"  , "40.0 and more"];
+            
+            var activeSet = "2016";
+            var winningSide = d3.map();
 
-            var legend = d3.select('body').append('table').attr("id", "legend").attr("width", xScale(11)).attr("height", 10);  
-            legend.append("tr").attr("id", "legendColor");
-            var legendGrid = d3.select("#legendColor").selectAll("td").data(varColor).enter()
-                                .append("td")
-                                .attr("height", 5)
-                                .style("background", function(v) {
-                                    return v;
-                                });
-
-            legend.append("tr").attr("id", "legendText");
-            var legendGrid = d3.select("#legendText").selectAll("td").data(varText).enter()
-                                .append("td")
-                                .attr("height", 5)
-                                .html(function(v) {
-                                    return v;
-                                });
-
+            // positions for each state
             var pos = [["AK", ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , "ME"],
                         [""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  , "VT", "NH"],
                         [""  , "WA", "ID", "MT", "ND", "MN", "IL", "WI", "MI", "NY", "RI", "MA"],
@@ -106,89 +180,196 @@
                         [""  , ""  , "AZ", "NM", "KS", "AR", "TN", "NC", "SC", "DE", ""  , ""  ],
                         [""  , ""  , ""  , ""  , "OK", "LA", "MS", "AL", "GA", ""  , ""  , ""  ],
                         [""  , "HI"  , ""  , ""  , "TX", ""  , ""  , ""  , ""  , "FL", ""  , ""  ]];
-            var table = d3.select('body').append('table').attr("id", "map").attr("width", w).attr("height", h);   
-            var tr = d3.select("#map").selectAll("tr").enter().data(pos).enter().append("tr");
-            for(i = 0; i < 12; i++) { 
-                tr.append('td')
-                    .attr('id', function(l) { if(l[i] != "")return l[i]})
-                    .attr("width", function() {
-                        xScale(1);
-                    })
-                    .attr("height", function() {
-                        yScale(1);
+
+            contstructTimeline();
+            appendLegend();
+            constructPresidentImg();            
+            constructMap();
+
+            function contstructTimeline() {
+                var timelineContainer = d3.select("body").append("div").attr("class", "container");
+                var timelineButton = timelineContainer.append("ul").attr("class", "timelineButton");
+                timelineContainer.append("br");
+                var timelineYear = timelineContainer.append("ul").attr("class", "timelineYear");
+                d3.csv("data/yearwise-winner.csv", function(timelineData){
+                    timelineButton.selectAll(".timelineButton").data(timelineData).enter().append("li")
+                    .attr("id", function(d) {
+                        var party = d.PARTY == "D" ? "D_Nominee" : "R_Nominee";
+                        winningSide.set(d.YEAR, party);
+                        return "p" + d.YEAR;
                     })
                     .append("div")
-                    .html(function(l) { return l[i] });
-            }
-
-            var tooltip = d3.select("body").append("div")   
-                .attr("class", "tooltip")               
-                .style("opacity", 0);
-         //.style("visibility", "hidden");
-            d3.csv("election-results.csv", function(data) {          
-                data.forEach(function(d) {
-                     table.select("#" + d[""]).style("background", function() {
-                        var ratio = (parseFloat(parseInt(d["% Trump"]) - parseFloat(d["% Clinton"])));
-                        console.log(d[""], ratio);
-                        if(ratio < 0) {
-                            var index = parseInt(ratio / 10);
-                            if(index < -4) index = -4;
-                            return varColor[4 + index];
+                    .style("background",  function(d) {
+                        if(d.PARTY == "D") {
+                            return "#6baed6";
                         }
                         else {
-                            var index = parseInt(ratio / 10);
-                            if(index > 4) index = 4;
-                            return varColor[5 + index];
+                            return "#fb6a4a";
                         }
-                     });
-
-                     table.select("#" + d[""])
-                     .append("div")
-                     .html((parseInt(d["Electoral Votes Clinton"]) + parseInt(d["Electoral Votes Trump"])).toString())
-                     .on("mouseover", function() {           
-                        tooltip 
-                        .style("left", (d3.event.pageX) + "px")     
-                        .style("top", (d3.event.pageY - 100) + "px")
-                        .style("opacity", .9);
-
-                        //State or District
-                        tooltip.append("p").html(d["State or district"])
-                        .attr("class", "state")
-                        .style("color", function(){
-                            return d["% Trump"] > d["% Clinton"] ? "#a50f15" : "#08519c"
-                        });
-
-                        tooltip.append("p")
-                        .html("Electoral Votes: " + (parseInt(d["Electoral Votes Clinton"]) + parseInt(d["Electoral Votes Trump"])).toString())
-                        .attr("class", "votes");
-
-                        var ul = tooltip.append("ul").style("margin-top", "1vh").style("padding-left-left", ".2vw");
-
-                        ul.append("li")
-                        .attr("class", "clinton")
-                        .html("Hillary Clinton: " 
-                            + (parseInt(d["# Clinton"])).toString() 
-                            + " (" 
-                            + (parseInt(d["% Clinton"])).toString() 
-                            + "%)");
-
-                        ul.append("li")
-                        .attr("class", "trump")
-                        .html("Donald Trump: " 
-                            + (parseFloat(d["# Trump"])).toString() 
-                            + " (" 
-                            + (parseFloat(d["% Trump"])).toString() 
-                            + "%)");
-
-                    })                  
-                    .on("mouseout", function(d) {        
-                        tooltip.style("opacity", 0);  
-                        tooltip.selectAll("*").remove();   
+                    })
+                    .attr("class", function(d) {
+                        if(activeSet == d.YEAR) {
+                            activeSet = d.YEAR;
+                            return "active";
+                        }
+                    })
+                    .on("click", function(d) {
+                        d3.select(".timelineButton").selectAll("div").classed("active", false);
+                        console.log(d.YEAR);
+                        activeSet = d.YEAR;
+                        d3.select(".timelineButton").select("#p" + d.YEAR.toString()).select("div").classed("active", true);
+                        reloadMap();
                     });
 
-                 });
-            });
-            table.append('tr').enter();
+
+                    timelineYear.selectAll(".timelineYear").data(timelineData).enter().append("li")
+                    .html(function(d) {
+                        return d.YEAR;
+                    })
+                });
+            }
+
+
+            function appendLegend() {
+                // create legend table
+                var legend = d3.select('body').append('table').attr("id", "legend").attr("width", xScale(11)).attr("height", 10);  
+                legend.append("tr").attr("id", "legendColor");
+                // create legend colors entry
+                var legendGrid = d3.select("#legendColor").selectAll("td").data(varColor).enter()
+                                    .append("td")
+                                    .attr("width", xScale(1) * 1.2)
+                                    .attr("height", 5)
+                                    .style("background", function(v) {
+                                        return v;
+                                    });
+                // create legend text entry
+                legend.append("tr").attr("id", "legendText");
+                var legendGrid = d3.select("#legendText").selectAll("td").data(varText).enter()
+                                    .append("td")
+                                    .attr("height", 5)
+                                    .html(function(v) {
+                                        return v;
+                                    });
+            }
+
+            function constructPresidentImg() {
+                d3.select("body").append("div").attr('class', "image");
+
+            }
+
+            function constructMap() {
+                var filepath = "data/election-results-" + activeSet + ".csv";
+                // table for map
+                var table = d3.select('body').append('table').attr("id", "map").attr("width", w).attr("height", h);   
+                var tr = d3.select("#map").selectAll("tr").enter().data(pos).enter().append("tr");
+                // append each grid for each state
+                for(i = 0; i < 12; i++) { 
+                    tr.append('td')
+                        .attr('id', function(l) { 
+                            if((parseInt(activeSet) > 1960 || (l[i] != "AK" && l[i] != "HI" && l[i] != "DC")) && l[i] != "")
+                                return l[i];
+                        })
+                        .attr("width", function() {
+                            xScale(1);
+                        })
+                        .attr("height", function() {
+                            yScale(1);
+                        })
+                        .append("div")
+                        .html(function(l) { 
+                            if((parseInt(activeSet) > 1960 || (l[i] != "AK" && l[i] != "HI" && l[i] != "DC")) && l[i] != "")
+                                return l[i];
+                        });
+                }
+
+                // create tooltip
+                var tooltip = d3.select("body").append("div")   
+                    .attr("class", "tooltip")               
+                    .style("opacity", 0);
+
+                // load all data for each state
+                d3.csv(filepath, function(data) {  
+                    // set the photo of the president   
+                    var imagefile = "images/" + data[0][winningSide.get(activeSet)] + ".jpg";
+                    d3.select(".image").append("img").attr("src", imagefile); 
+                    data.forEach(function(d) {
+
+                        // decide which background color to use here 
+                        table.select("#" + d["Abbreviation"]).style("background", function() {
+                            var ratio = (parseFloat(parseInt(d["R_Percentage"]) - parseFloat(d["D_Percentage"])));
+                            if(ratio < 0) {
+                                var index = parseInt(ratio / 10);
+                                if(index < -4) index = -4;
+                                return varColor[4 + index];
+                            }
+                            else {
+                                var index = parseInt(ratio / 10);
+                                if(index > 4) index = 4;
+                                return varColor[5 + index];
+                            }
+                        });
+
+                        table.select("#" + d["Abbreviation"])
+                            // add number of electoral votes
+                            .append("div")
+                            .html(d["Total_EV"])
+                            // tooltip when hovering
+                            .on("mouseover", function() {  
+                                // tooltip style         
+                                tooltip 
+                                .style("left", (d3.event.pageX) + "px")     
+                                .style("top", (d3.event.pageY - 100) + "px")
+                                .style("opacity", .9);
+
+                                //State or District on tip
+                                tooltip.append("p").html(d["State"])
+                                .attr("class", "state")
+                                .style("color", function(){
+                                    return d["R_Percentage"] > d["D_Percentage"] ? "#a50f15" : "#08519c"
+                                });
+
+                                // number of electoral votes on tip
+                                tooltip.append("p")
+                                .html("Electoral Votes: " + d["Total_EV"])
+                                .attr("class", "votes");
+
+                                // number of votes on each side on tip as list
+                                var ul = tooltip.append("ul").style("margin-top", "1vh").style("padding-left-left", ".2vw");
+
+                                ul.append("li")
+                                .attr("class", "clinton")
+                                .html(d["D_Nominee"] + ": "
+                                    + (parseInt(d["D_Votes"].replace(',','').replace(',',''))).toString() 
+                                    + " (" 
+                                    + (parseInt(d["D_Percentage"])).toString() 
+                                    + "%)");
+
+                                ul.append("li")
+                                .attr("class", "trump")
+                                .html(d["R_Nominee"] + ": "
+                                    + (parseFloat(d["R_Votes"].replace(',','').replace(',',''))).toString() 
+                                    + " (" 
+                                    + (parseFloat(d["R_Percentage"])).toString() 
+                                    + "%)");
+                            })
+                            // tooltip hidden when mouse out
+                            .on("mouseout", function(d) {        
+                                tooltip.style("opacity", 0);  
+                                tooltip.selectAll("*").remove();   
+                        });
+
+                     });
+                });
+                // append the tr table entries
+                table.append('tr').enter();
+            }
+
+            // when active year changed, relaod the map and the image
+            function reloadMap() {
+                document.getElementById("map").remove();
+                constructMap();
+                d3.select(".image").select("img").remove();
+            }
         </script>
     </body>
 </html>
