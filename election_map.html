@@ -290,7 +290,7 @@
                 // load all data for each state
                 d3.csv(filepath, function(data) {  
                     // set the photo of the president   
-                    var imagefile = "images/" + data[0][winningSide.get(activeSet)] + ".jpg";
+                    var imagefile = "images/" + data[20][winningSide.get(activeSet)] + ".jpg";
                     d3.select(".image").append("img").attr("src", imagefile); 
                     data.forEach(function(d) {
 
@@ -317,8 +317,8 @@
                             .on("mouseover", function() {  
                                 // tooltip style         
                                 tooltip 
-                                .style("left", (d3.event.pageX) + "px")     
-                                .style("top", (d3.event.pageY - 100) + "px")
+                                .style("left", (d3.event.pageX - 290) + "px")     
+                                .style("top", (d3.event.pageY - 120) + "px")
                                 .style("opacity", .9);
 
                                 //State or District on tip

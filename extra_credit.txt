@@ -1,7 +1,25 @@
-# 557_hw4
+Extra credit:
+
+1. Implement timeline for each year and data for each year shown
+
+2. Implement presidents’ image for each election result
+
+3. Public code online
+
+4. Public all 3 homeworks online
+
+Link for hw2 code: https://github.com/EuniceChen/557_hw2/blob/master/bar_and_line/bar_and_line.pde
+
+Link for hw3 code: https://github.com/EuniceChen/557_hw3/tree/master/parallel_coordinates
+
+Link for hw4 code: https://github.com/EuniceChen/557_hw4/blob/master/election_map.html
+
+
+Readme Part
 
 1. A map for each year’s election is shown, each brick represents a state. Brick for each state are colored in either blue or red, which indicates which side in democratic (blue) and republican (red) wins in this state. The darkness of the color indicates the win percentage so user can briefly tell how much percentage a side wins in this state by referring to the legend on the top.
 
 2. A timeline from 1940 - 2016’s election results are listed. By clicking the round buttons on the timeline, a user could switch between different year’s data. Note that before 1960, none of HI, AK and DC existed, so there are no data for these 3 district before 1960.
 
 3. A image for each year’s president is shown for each map. They are cut in circle for aesthetic purpose.  
+
